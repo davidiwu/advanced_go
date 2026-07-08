@@ -10,6 +10,7 @@ A collection of advanced Go patterns and use cases, organized by topic.
 |---|---|
 | [`generics/`](./generics) | Generic types, constraints, and utility functions |
 | [`concurrency/`](./concurrency) | Pipeline, fan-out/fan-in, worker pool, errgroup, context propagation |
+| [`behavioral/`](./behavioral) | Functional options, option type, table-driven tests, middleware chaining |
 
 ## Setup
 
@@ -34,6 +35,9 @@ cd generics && go run .
 
 # Run the concurrency examples
 cd concurrency && go run .
+
+# Run the behavioral examples
+cd behavioral && go run .
 ```
 
 ## Requirements

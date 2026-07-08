@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 // --- Fan-out / Fan-in Pattern ---
@@ -19,6 +20,8 @@ import (
 // slowSquare simulates an expensive computation so that running
 // multiple workers in parallel produces a visible speedup.
 func slowSquare(n int) int {
+	// sleep 1 second to simulate a slow computation
+	time.Sleep(1 * time.Second)
 	return n * n
 }
 
