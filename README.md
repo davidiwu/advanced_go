@@ -9,6 +9,7 @@ A collection of advanced Go patterns and use cases, organized by topic.
 | Directory | Topic |
 |---|---|
 | [`generics/`](./generics) | Generic types, constraints, and utility functions |
+| [`concurrency/`](./concurrency) | Pipeline, fan-out/fan-in, worker pool, errgroup, context propagation |
 
 ## Setup
 
@@ -30,6 +31,9 @@ go get github.com/davidiwu/advanced_go
 ```bash
 # Run the generics examples
 cd generics && go run .
+
+# Run the concurrency examples
+cd concurrency && go run .
 ```
 
 ## Requirements
