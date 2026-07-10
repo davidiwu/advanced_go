@@ -65,13 +65,13 @@ func DemoPool() {
 
 	// Concurrency-safe: multiple goroutines can Get/Put simultaneously.
 	var wg sync.WaitGroup
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		wg.Add(1)
-		go func(n int) {
+		go func() {
 			defer wg.Done()
-			result := processWithPool(fmt.Sprintf("goroutine-%d", n))
+			result := processWithPool(fmt.Sprintf("goroutine-%d", i))
 			_ = result
-		}(i)
+		}()
 	}
 	wg.Wait()
 	fmt.Println("concurrent pool usage: no data races")

@@ -67,7 +67,7 @@ func DemoPrealloc() {
 	var s []int
 	fmt.Println("\ncapacity growth steps (nil start, appending 1..16):")
 	prevCap := 0
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		s = append(s, i)
 		if cap(s) != prevCap {
 			fmt.Printf("  len=%-3d cap=%d  ← reallocation\n", len(s), cap(s))

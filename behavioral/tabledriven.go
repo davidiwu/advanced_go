@@ -20,14 +20,14 @@ import "fmt"
 // Add adds two integers. Trivial, but useful for a clean demo.
 func Add(a, b int) int { return a + b }
 
-// Clamp returns v clamped to [min, max].
+// Clamp returns v clamped to [lo, hi].
 // Demonstrates a function with multiple interesting boundary cases.
-func Clamp(v, min, max int) int {
-	if v < min {
-		return min
+func Clamp(v, lo, hi int) int {
+	if v < lo {
+		return lo
 	}
-	if v > max {
-		return max
+	if v > hi {
+		return hi
 	}
 	return v
 }
@@ -79,20 +79,20 @@ func runClampTable() {
 	cases := []struct {
 		name     string
 		v        int
-		min, max int
+		lo, hi   int
 		expected int
 	}{
 		// Boundary cases are where bugs hide — the table makes them explicit.
-		{"below min", -5, 0, 10, 0},
-		{"at min", 0, 0, 10, 0},
+		{"below lo", -5, 0, 10, 0},
+		{"at lo", 0, 0, 10, 0},
 		{"within range", 5, 0, 10, 5},
-		{"at max", 10, 0, 10, 10},
-		{"above max", 15, 0, 10, 10},
-		{"min equals max", 7, 5, 5, 5},
+		{"at hi", 10, 0, 10, 10},
+		{"above hi", 15, 0, 10, 10},
+		{"lo equals hi", 7, 5, 5, 5},
 	}
 
 	for _, tc := range cases {
-		got := Clamp(tc.v, tc.min, tc.max)
+		got := Clamp(tc.v, tc.lo, tc.hi)
 		status := "PASS"
 		if got != tc.expected {
 			status = fmt.Sprintf("FAIL: got %d, want %d", got, tc.expected)

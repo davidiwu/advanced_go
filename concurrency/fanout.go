@@ -51,12 +51,12 @@ func fanIn(channels ...<-chan string) <-chan string {
 
 	// One forwarder goroutine per source channel.
 	for _, ch := range channels {
-		go func(c <-chan string) {
+		go func() {
 			defer wg.Done()
-			for v := range c {
+			for v := range ch {
 				merged <- v
 			}
-		}(ch)
+		}()
 	}
 
 	// Close the merged channel once all forwarders finish.
@@ -75,15 +75,15 @@ func DemoFanOut() {
 	fmt.Println("=== Fan-out / Fan-in ===")
 
 	jobs := make(chan int, 8) // buffered so the producer never blocks
-	for i := 1; i <= 8; i++ {
-		jobs <- i
+	for i := range 8 {
+		jobs <- i + 1
 	}
 	close(jobs) // no more jobs; workers will drain and exit
 
 	// Fan-out: start 3 workers, all reading from the same jobs channel.
-	numWorkers := 3
+	const numWorkers = 3
 	workerChans := make([]<-chan string, numWorkers)
-	for i := 0; i < numWorkers; i++ {
+	for i := range numWorkers {
 		workerChans[i] = fanOutWorker(i, jobs)
 	}
 

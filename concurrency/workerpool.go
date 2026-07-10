@@ -51,13 +51,12 @@ func startWorkerPool(numWorkers int, jobs <-chan Job) <-chan Result {
 	var wg sync.WaitGroup
 	wg.Add(numWorkers)
 
-	for id := 0; id < numWorkers; id++ {
-		workerID := id // capture loop variable before goroutine launch
+	for id := range numWorkers {
 		go func() {
 			defer wg.Done()
 			// Each worker loops until 'jobs' is closed.
 			for job := range jobs {
-				results <- processJob(job, workerID)
+				results <- processJob(job, id)
 			}
 		}()
 	}
@@ -84,8 +83,8 @@ func DemoWorkerPool() {
 	// Buffer the jobs channel to the total job count so the
 	// producer never blocks while filling it.
 	jobs := make(chan Job, numJobs)
-	for i := 1; i <= numJobs; i++ {
-		jobs <- Job{ID: i, Value: i}
+	for i := range numJobs {
+		jobs <- Job{ID: i + 1, Value: i + 1}
 	}
 	close(jobs) // tell workers: no more jobs after this
 

@@ -52,7 +52,6 @@ func DemoErrGroup() {
 	g, ctx := errgroup.WithContext(context.Background())
 
 	for _, url := range urls {
-		url := url // capture loop variable — required before Go 1.22
 		g.Go(func() error {
 			return fetchURL(ctx, url)
 		})
@@ -80,7 +79,6 @@ func DemoErrGroupNoError() {
 
 	g, ctx := errgroup.WithContext(context.Background())
 	for _, url := range urls {
-		url := url
 		g.Go(func() error {
 			return fetchURL(ctx, url)
 		})

@@ -1,48 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"cmp"
+	"fmt"
+)
 
-// Ordered is a constraint interface that restricts T to types that support the
-// < and > operators. "any" would be too broad here — you can't compare arbitrary
-// types with < , so the compiler would reject Min/Max if T were unconstrained.
-// The ~ prefix means "any type whose underlying type is X", which allows custom
-// named types like Celsius (defined below) to satisfy the constraint.
-type Ordered interface {
-	~int | ~float64 | ~string
+// cmp.Ordered (Go 1.21) is the stdlib constraint for types that support <, >.
+// It covers all integer types, float types, and string — with ~ so named types
+// like Celsius below satisfy it automatically.
+// Before 1.21 you had to declare this constraint yourself.
+
+// Clamp uses the built-in min/max (Go 1.21) directly.
+// The separate Min[T]/Max[T] wrapper functions this file used to define are
+// now redundant — min and max are generic built-ins that work on any cmp.Ordered type.
+func Clamp[T cmp.Ordered](v, lo, hi T) T {
+	return max(lo, min(v, hi))
 }
 
-// Without the Ordered constraint, the expression "a < b" would not compile because
-// Go cannot guarantee that an arbitrary T supports comparison operators.
-func Min[T Ordered](a, b T) T {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func Max[T Ordered](a, b T) T {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-// Clamp reuses Min and Max — both accept any T Ordered, so they compose naturally.
-func Clamp[T Ordered](v, lo, hi T) T {
-	return Max(lo, Min(v, hi))
-}
-
-// Celsius has float64 as its underlying type, so ~float64 in Ordered covers it.
-// Without the ~ prefix, Celsius would NOT satisfy the constraint even though it
-// behaves exactly like float64 numerically.
+// Celsius has float64 as its underlying type, so cmp.Ordered covers it via ~float64.
 type Celsius float64
 
 func DemoOrdered() {
 	fmt.Println("=== Ordered Constraint ===")
 
-	fmt.Println("min(3, 7):", Min(3, 7))
-	fmt.Println("max(3.14, 2.72):", Max(3.14, 2.72))
-	fmt.Println(`min("apple","banana"):`, Min("apple", "banana"))
+	// Built-in min/max work on any ordered type — no wrapper needed.
+	fmt.Println("min(3, 7):", min(3, 7))
+	fmt.Println("max(3.14, 2.72):", max(3.14, 2.72))
+	fmt.Println(`min("apple","banana"):`, min("apple", "banana"))
 
 	var temp Celsius = 120.0
 	clamped := Clamp(temp, Celsius(0), Celsius(100))

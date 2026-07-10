@@ -51,6 +51,78 @@ cd performance && go run .
 cd errors && go run .
 ```
 
+## Modern Go features used in this repo
+
+This repo targets Go 1.22+ and uses several language and stdlib improvements that
+replace older workarounds. These are worth knowing even outside this project.
+
+### Go 1.20 — `errors.Join`
+
+Before 1.20, collecting multiple errors into one required a custom type that
+implemented `Unwrap() []error`. Now the stdlib handles it:
+
+```go
+// before
+type multiError struct{ errs []error }
+func (m *multiError) Unwrap() []error { return m.errs }
+
+// after
+return errors.Join(errs...)  // returns nil if all inputs are nil
+```
+
+`errors.Is` and `errors.As` traverse the joined list automatically.
+
+### Go 1.21 — `cmp.Ordered`, built-in `min` / `max`
+
+The `cmp` package introduced the `cmp.Ordered` constraint, replacing hand-rolled
+union constraints for ordered types. Two new built-in functions cover the most
+common generic min/max need:
+
+```go
+// before
+type Ordered interface{ ~int | ~float64 | ~string }
+func Min[T Ordered](a, b T) T { if a < b { return a }; return b }
+
+// after
+import "cmp"
+func Clamp[T cmp.Ordered](v, lo, hi T) T { return max(lo, min(v, hi)) }
+// min and max are built-ins — no import, no wrapper
+```
+
+### Go 1.22 — loop variable per iteration
+
+Before 1.22, all iterations of a `for` loop shared one variable. Closures or
+goroutines that captured the loop variable would all see the final value unless
+you explicitly shadowed it:
+
+```go
+// before — url shadowed to capture current value
+for _, url := range urls {
+    url := url  // required: without this every goroutine sees the last url
+    go func() { fetch(url) }()
+}
+
+// after — each iteration has its own url; no shadowing needed
+for _, url := range urls {
+    go func() { fetch(url) }()
+}
+```
+
+The same applies to goroutines capturing an index variable from a numeric loop.
+
+### Go 1.22 — range over integer
+
+`for i := range N` is now valid for any integer `N`, replacing the traditional
+three-clause form for simple counting loops:
+
+```go
+// before
+for i := 0; i < 10; i++ { ... }
+
+// after
+for i := range 10 { ... }
+```
+
 ## Requirements
 
-- Go 1.19+
+- Go 1.22+
