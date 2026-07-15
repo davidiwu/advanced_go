@@ -7,6 +7,54 @@ reporting, and interface-based test doubles — all without third-party framewor
 > **Note:** Unlike other modules in this repo, there is no `main.go`.
 > The demo *is* `go test`. See the commands below.
 
+## Key Types in the `testing` Package
+
+Go's `testing` package uses short, single-letter type names. Here's what each one does:
+
+| Type | Full meaning | Passed to | Purpose |
+|------|-------------|-----------|---------|
+| `*testing.T` | **T**est | `func TestXxx(t *testing.T)` | Unit and integration tests — reports failures, runs subtests, controls parallelism |
+| `*testing.B` | **B**enchmark | `func BenchmarkXxx(b *testing.B)` | Performance benchmarks — exposes `b.N` (iteration count), timer controls, and allocation reporting |
+| `testing.TB` | **T**est or **B**enchmark | Helper parameters | Interface satisfied by both `*T` and `*B`; write shared helpers against `TB` so they work in both contexts |
+| `*testing.F` | **F**uzz | `func FuzzXxx(f *testing.F)` | Fuzz tests — manages the seed corpus (`f.Add`) and delegates to a fuzz target via `f.Fuzz` |
+| `*testing.M` | **M**ain | `func TestMain(m *testing.M)` | Test binary lifecycle — runs global setup/teardown around the entire test suite; call `os.Exit(m.Run())` |
+
+### When each type is the receiver
+
+```go
+// T — every ordinary test function
+func TestAdd(t *testing.T) { ... }
+
+// B — every benchmark function
+func BenchmarkAdd(b *testing.B) {
+    for range b.N { Add(1, 2) }
+}
+
+// TB — shared helpers (accepts either T or B)
+func setup(tb testing.TB) {
+    tb.Helper()
+    ...
+}
+
+// F — fuzz targets (go test -fuzz=FuzzAdd)
+func FuzzAdd(f *testing.F) {
+    f.Add(1, 2)                          // seed corpus
+    f.Fuzz(func(t *testing.T, a, b int) { // T inside the fuzz target
+        Add(a, b)
+    })
+}
+
+// M — test binary entry point (optional, one per package)
+func TestMain(m *testing.M) {
+    setup()
+    os.Exit(m.Run()) // runs all Test*, Benchmark*, and Fuzz* in the package
+}
+```
+
+**Key point:** `T` and `B` share a common ancestor (`TB`) because assertion helpers should not care whether they're called from a test or a benchmark. Always accept `testing.TB` in helper functions — never `*testing.T` alone.
+
+---
+
 ## Patterns
 
 ### Table-Driven Tests (`wordcount_test.go`)
