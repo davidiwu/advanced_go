@@ -1,5 +1,30 @@
 package main
 
+// --- io.Pipe ---
+//
+// io.Pipe creates a synchronous, in-memory connection between a writer and a
+// reader with no intermediate buffer. Every Write blocks until a corresponding
+// Read has consumed the data — they rendezvous directly.
+//
+// Pattern:
+//
+//	pr, pw := io.Pipe()
+//	go func() {
+//	    defer pw.Close()       // signals EOF to the reader
+//	    pw.Write(data)
+//	}()
+//	io.ReadAll(pr)             // blocks until goroutine closes pw
+//
+// When to use: connecting a function that writes (json.Encoder, gzip.Writer,
+// tar.Writer) to a function that reads (http.Request.Body, io.ReadAll) without
+// allocating an intermediate bytes.Buffer. The pipe avoids buffering the entire
+// payload in memory.
+//
+// Key points:
+//   - Writer and reader MUST run in separate goroutines; same-goroutine use deadlocks.
+//   - pw.CloseWithError(err) propagates the error to the reader's next Read call.
+//   - pr.CloseWithError(err) propagates the error to the writer's next Write call.
+
 import (
 	"fmt"
 	"io"
@@ -8,10 +33,6 @@ import (
 
 // DemoPipe shows io.Pipe: a synchronous, in-memory pipe that connects a writer
 // to a reader without buffering. The writer blocks until the reader consumes.
-//
-// Primary use case: feeding data into a function that expects an io.Reader
-// when your data source is a function that writes to an io.Writer (e.g.,
-// encoding/json.Encoder → http.Request.Body).
 func DemoPipe() {
 	fmt.Println("=== io.Pipe ===")
 

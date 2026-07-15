@@ -1,5 +1,31 @@
 package main
 
+// --- Decorator Pattern ---
+//
+// A decorator wraps an existing io.Reader or io.Writer and adds behaviour
+// (transformation, logging, limiting, tee-ing) without changing the interface.
+// Because both Reader and Writer are single-method interfaces, wrapping them
+// requires only a struct that holds the inner value and a forwarding method.
+//
+// Pattern (Reader side):
+//
+//	type MyReader struct{ r io.Reader }
+//	func (m *MyReader) Read(p []byte) (int, error) {
+//	    n, err := m.r.Read(p)
+//	    // transform p[:n] here
+//	    return n, err
+//	}
+//
+// The stdlib ships several ready-made decorators:
+//   - io.LimitReader(r, n)   — truncates r to at most n bytes
+//   - io.TeeReader(r, w)     — reads from r while writing to w simultaneously
+//   - io.MultiReader(rs...)  — concatenates readers end-to-end
+//   - io.MultiWriter(ws...)  — fans a single write out to all writers
+//
+// When to use: any time you need to add logging, byte counting, compression,
+// or transformation to a stream without modifying the producer or consumer.
+// Decorators compose: wrap as many layers as needed — each is still a Reader/Writer.
+
 import (
 	"fmt"
 	"io"

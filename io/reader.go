@@ -1,5 +1,25 @@
 package main
 
+// --- Custom io.Reader ---
+//
+// io.Reader is the most fundamental input interface in Go's stdlib:
+//
+//	type Reader interface {
+//	    Read(p []byte) (n int, err error)
+//	}
+//
+// Any type that implements Read can be passed to io.ReadAll, io.Copy,
+// bufio.NewScanner, json.NewDecoder, and virtually every other I/O function.
+//
+// Contract:
+//   - Fill p with up to len(p) bytes; return the count written.
+//   - Return io.EOF (alongside the last bytes, or with n=0) when exhausted.
+//   - Never return (0, nil) at the end — that signals "no data yet, try again"
+//     and will cause callers to loop forever.
+//
+// When to use: when your data source is not a file, network connection, or
+// string — e.g. generated content, in-memory structures, protocol framing.
+
 import (
 	"fmt"
 	"io"

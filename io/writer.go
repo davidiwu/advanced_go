@@ -1,5 +1,24 @@
 package main
 
+// --- Custom io.Writer ---
+//
+// io.Writer is the standard output interface in Go's stdlib:
+//
+//	type Writer interface {
+//	    Write(p []byte) (n int, err error)
+//	}
+//
+// Any type that implements Write can be passed to fmt.Fprintf, io.Copy,
+// json.NewEncoder, gzip.NewWriter, and every other streaming encoder.
+//
+// Contract:
+//   - Write all len(p) bytes and return len(p), nil on success.
+//   - Returning fewer than len(p) bytes without an error violates the contract
+//     and causes io.Copy to return io.ErrShortWrite.
+//
+// When to use: when you need to capture, transform, count, or fan out bytes
+// as they are written — without changing the producer's code.
+
 import (
 	"fmt"
 	"io"
